@@ -1,4 +1,0 @@
-/c/Users/Sadik/Documents/roger/build/CMakeFiles/Gem.dir
-/c/Users/Sadik/Documents/roger/build/CMakeFiles/test.dir
-/c/Users/Sadik/Documents/roger/build/CMakeFiles/edit_cache.dir
-/c/Users/Sadik/Documents/roger/build/CMakeFiles/rebuild_cache.dir
