@@ -7,10 +7,14 @@ class Game : public gem::Window {
     gem::TextureManager manager;
 
     Game(): Window("My Game", {800, 600}){
-        auto error = manager.loadTexture("ball", "Ball.png");
-        if (!error.ok){
-            printf("Error: %s\n", error.what); // useful for texture already existing or not being loaded 
-        }
+        Uint8 pixels[] = {
+            255, 0, 0, 255,
+            0, 255, 0, 255,
+            0, 0, 255, 255,
+            255, 255, 0, 255
+        };
+
+        manager.loadEmbeddedRaw("ball", pixels, 2, 2);
     }
     
     void update(float delta) override {
@@ -20,11 +24,10 @@ class Game : public gem::Window {
         gem::Graphics::clear(gem::Colors::Wheat);
         gem::Graphics::texture(
             manager.getTexture("ball"),
-            {100, 100}, 
-            gem::Colors::NoTint, 
-            {3.0f, 3.0f}
+            {100, 100},
+            gem::Colors::NoTint,
+            {10.0f, 10.0f}
         );
-        // Optional: tint, scale, angle
     }
 
     void dispose() override {

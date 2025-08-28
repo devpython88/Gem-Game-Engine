@@ -5,6 +5,7 @@
 #include <cmath>
 #include <unordered_map>
 #include <optional>
+#include <array>
 #include <memory>
 #include <string>
 
@@ -185,6 +186,7 @@ namespace gem {
         Texture() = default;
         Texture(const std::string& path): m_Texture(rl::LoadTexture(path.c_str())){
         }
+        Texture(rl::Texture texture): m_Texture(texture){}
         
         bool loaded();
         void unload();
@@ -246,6 +248,22 @@ namespace gem {
 
             addItem(name, texture);
             return {true, ""};
+        }
+
+        inline void loadEmbeddedRaw(const std::string& name, Uint8* pixels, int width, int height){
+            rl::Image image = {
+                .data = pixels,
+                .width = width,
+                .height = height,
+                .mipmaps = 1,
+                .format = rl::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
+            };
+
+            rl::Texture2D rlTex = rl::LoadTextureFromImage(image);
+
+            Texture tex(rlTex);
+
+            addItem(name, tex);
         }
 
         inline void unloadTexture(const std::string& name){
