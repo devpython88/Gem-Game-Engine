@@ -1,7 +1,11 @@
 #pragma once
 #include "math.hpp"
+#include "error.hpp"
 #include <cstdint>
 #include <cmath>
+#include <unordered_map>
+#include <optional>
+#include <memory>
 #include <string>
 
 
@@ -26,6 +30,7 @@ namespace gem {
         }
     };
 
+    
     class Colors {
         public:
         static const Color Red;
@@ -63,8 +68,8 @@ namespace gem {
         static const Color Ivory;
         static const Color Peach;
         static const Color Wheat;
+        static const Color NoTint;
     };
-
     
     
     class Object {
@@ -169,6 +174,101 @@ namespace gem {
         }
     };
 
+
+
+    class Texture {
+        private:
+        rl::Texture m_Texture;
+
+    public:
+
+        Texture() = default;
+        Texture(const std::string& path): m_Texture(rl::LoadTexture(path.c_str())){
+        }
+        
+        bool loaded();
+        void unload();
+        void reload(const std::string& path);
+        rl::Texture rawTexture() const { return m_Texture; }
+    };
+
+
+    
+    template <typename _Tp>
+    class Manager {
+        protected:
+        std::unordered_map<std::string, _Tp> m_Items;
+
+        inline void addItem(const std::string& name, _Tp item){
+            if (!itemExists(name)){
+                m_Items[name] = item;
+            }
+        }
+        
+        inline void removeItem(const std::string& name){
+            if (itemExists(name)){
+                m_Items.erase(name);
+            }
+        }
+
+        inline bool itemExists(const std::string& name){
+            return m_Items.find(name) != m_Items.end();
+        }
+
+        inline std::shared_ptr<_Tp> getItem(const std::string& name){
+            if (!itemExists(name)){
+                return nullptr;
+            }
+
+            return std::make_shared<_Tp>(m_Items[name]);
+        }
+
+
+        public:
+
+        Manager() = default;
+    };
+
+
+
+    class TextureManager : public Manager<Texture> {
+        public:
+
+        TextureManager() = default;
+
+        inline Error loadTexture(const std::string& name, const std::string& path){
+            if (textureExists(name)) return {false, "Texture already exists"};
+            Texture texture(path);
+
+            if (!texture.loaded()){
+                return {false, "Texture was not loaded successfully, Maybe check the path?"};
+            }
+
+            addItem(name, texture);
+            return {true, ""};
+        }
+
+        inline void unloadTexture(const std::string& name){
+            if (!textureLoaded(name)) return;
+
+            m_Items[name].unload();
+        }
+
+        inline bool textureExists(const std::string& name) { return itemExists(name); }
+        inline bool textureLoaded(const std::string& name) { return itemExists(name) && m_Items[name].loaded(); }
+
+        inline std::shared_ptr<Texture> getTexture(const std::string& name){
+            return getItem(name);
+        }
+
+        inline void unloadAll(){
+            for (auto pair : m_Items){
+                pair.second.unload();
+            }
+        }
+    };
+
+
     class Graphics {
         private:
 
@@ -189,5 +289,7 @@ namespace gem {
         static void polyLines(Vector2 center, float radius, int sides, float rot, Color color);
 
         static void text(Vector2 position, const std::string& text, int fontSize, Color color, int spacing = 1, float angle = 0.0f);
+
+        static void texture(std::shared_ptr<Texture> texture, Vector2 position, Color tint = Colors::NoTint, Vector2 scale = {1.0f, 1.0f}, float angle = 0.0f);
     };
 }

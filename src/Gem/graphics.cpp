@@ -36,6 +36,7 @@ const gem::Color gem::Colors::Lavender  = {230, 230, 250, 255};
 const gem::Color gem::Colors::Ivory     = {255, 255, 240, 255};
 const gem::Color gem::Colors::Peach     = {255, 218, 185, 255};
 const gem::Color gem::Colors::Wheat     = {245, 222, 179, 255};
+const gem::Color gem::Colors::NoTint    = {255, 255, 255, 255};
 
 void gem::Graphics::clear(Color color)
 {
@@ -96,4 +97,45 @@ void gem::Graphics::polyLines(Vector2 center, float radius, int sides, float rot
 void gem::Graphics::text(Vector2 position, const std::string &text, int fontSize, Color color, int spacing, float angle)
 {
     rl::DrawTextPro(rl::GetFontDefault(), text.c_str(), position, rl::Vector2{0, 0}, angle, fontSize, spacing, color);
+}
+
+void gem::Graphics::texture(std::shared_ptr<Texture> texturePtr, Vector2 position, Color tint, Vector2 scale, float angle)
+{
+    if (texturePtr == nullptr){
+        rectangle(position, {50, 50}, Colors::Red);
+        return;
+    }
+
+    auto tex = texturePtr.get();
+
+    rl::Texture rawTexture = tex->rawTexture();
+
+    float width = static_cast<float>(rawTexture.width);
+    float height = static_cast<float>(rawTexture.height);
+
+    rl::DrawTexturePro(
+        rawTexture,
+        rl::Rectangle{0.0f, 0.0f, width, height},
+        rl::Rectangle{position.x, position.y, width * scale.x, height * scale.y},
+        rl::Vector2{width / 2, height / 2},
+        angle, tint
+    );
+}
+
+bool gem::Texture::loaded()
+{
+    return m_Texture.id != 0;
+}
+
+void gem::Texture::unload()
+{
+    if (loaded()){
+        rl::UnloadTexture(m_Texture);
+    }
+}
+
+void gem::Texture::reload(const std::string &path)
+{
+    unload();
+    m_Texture = rl::LoadTexture(path.c_str());
 }
